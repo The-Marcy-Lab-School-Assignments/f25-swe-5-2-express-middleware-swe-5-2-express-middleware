@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 
+
 const app = express();
 const port = 8080;
 
@@ -21,16 +22,50 @@ const quotes = [
 // TODO: Define middleware here
 
 // 1. logRoutes — logs the HTTP method, URL, and timestamp for every request, then calls next()
-
+const logRoutes = (req, res, next) => {
+  const time = new Date().toLocaleString();
+  console.log(`${req.method}: ${req.originalUrl} - ${time}`);
+  next();
+};
 // 2. express.static() — generates middleware that serves files from the frontend/ folder
 //    Use path.join(__dirname, '../frontend') to construct the absolute path
 
+const pathToFrontend = path.join(__dirname, '../frontend');
+const serveStatic = express.static(pathToFrontend);
+
+
 // TODO: Register middleware with app.use() before the controllers
 
-
+app.use(logRoutes);
+app.use(serveStatic);
 
 // TODO: Define controllers here
+const serveQuotes = (req, res, next) => {
+  const { topic } = req.query;
+  if (topic) {
+    const truth = quotes.filter((quote) => quote.topic === topic);
+    res.send(truth)
+  } else {
+    res.send(quotes);
+  }
+}
 
+const findId = (req, res, next) => {
+  const { id } = req.params;
+
+  const quote = quotes.find(quote => quote.id === Number(id));
+
+  if (!quote) {
+    res.status(404).send({ message: `No quote with the id ${id}` });
+    return
+  }
+
+  res.send(quote);
+}
+
+const serve404 = (req, res, next) => {
+  res.status(404).send({ error: `Not found: ${req.originalUrl}` });
+}
 // listQuotes — sends all quotes as JSON
 //   If the request includes a ?topic= query string, send only quotes with a matching topic
 
@@ -44,12 +79,14 @@ const quotes = [
 // GET /api/quotes
 // GET /api/quotes/:id
 
+app.get('/api/quotes', serveQuotes);
+app.get('/api/quotes/:id', findId);
 
 
 // TODO: Add a catch-all fallback that responds with 404 and { error: 'Not found: <url>' }
 // Use app.use() and place it after all other routes
 
-
+app.use(serve404);
 
 app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`);
