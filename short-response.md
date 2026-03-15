@@ -33,7 +33,15 @@ How are **query strings** and **route parameters** similar? How are they differe
 
 **Your answer here**:
 
-**query strings** and **route parameters** are similar because they both take data for the **request object**, but they differ in what data they take from. Query string takes from `req.query`, while route parameters take from `req.parms`. 
+**query strings** and **route parameters** are similar because they both take data for the **request object**, but they differ in what data they take from. Query string takes from `req.query`, while route parameters take from `req.params`. 
+
+Example:
+```js
+//route parameters
+`api/quotes/users/:routeParam`
+//query strings
+`http://localhost:8080/api/quotes?paramName=paramValue`
+```
 
 ---
 
@@ -43,4 +51,4 @@ For API fetch calls from a client-side application, explain the difference betwe
 
 **Your answer here**:
 
-When fetching from a **relative paths** it sends the request to the same host that served the page, while using a **full URL** will allow the browser to know exactly which **domain** and **protocol** to contact. But we do not send a fetch using a URL like `http://localhost:8080/api/quotes` because the relative paths will try to **fetch the request** in the wrong place, causing an error.
+When fetching from a **relative paths** it sends the request to the **Same-Origin** as the server we're requesting from, while using a **full URL** will allow the browser to know exactly which **domain** and **protocol** to contact. But we do not send a fetch using a URL like `http://localhost:8080/api/quotes` because localhost is not accessible from a client in a production environment.
