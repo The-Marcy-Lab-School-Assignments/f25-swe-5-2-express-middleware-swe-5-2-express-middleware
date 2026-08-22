@@ -18,37 +18,63 @@ const quotes = [
   { id: 10, author: 'Leonardo da Vinci', topic: 'art', text: 'Simplicity is the ultimate sophistication.' },
 ];
 
-// TODO: Define middleware here
+// logRoutes — logs the HTTP method, URL, and timestamp for every request
+const logRoutes = (req, res, next) => {
+  console.log(`${req.method} ${req.url} ${new Date().toISOString()}`);
+  next();
+};
 
-// 1. logRoutes — logs the HTTP method, URL, and timestamp for every request, then calls next()
+app.use(logRoutes);
 
-// 2. express.static() — generates middleware that serves files from the frontend/ folder
-//    Use path.join(__dirname, '../frontend') to construct the absolute path
-
-// TODO: Register middleware with app.use() before the controllers
-
-
-
-// TODO: Define controllers here
+// Serve the frontend
+app.use(express.static(path.join(__dirname, '../frontend')));
 
 // listQuotes — sends all quotes as JSON
-//   If the request includes a ?topic= query string, send only quotes with a matching topic
+// If the request includes a ?topic= query string, send only quotes with a matching topic
+const listQuotes = (req, res) => {
+  const { topic } = req.query;
+
+  if (topic) {
+    const filteredQuotes = quotes.filter(
+      (quote) => quote.topic === topic
+    );
+    return res.json(filteredQuotes);
+  }
+
+  res.json(quotes);
+};
+
 
 // getQuote — sends a single quote whose id matches req.params.id
-//   If no matching quote is found, respond with 404 and { error: 'No quote with id <id>' }
+// If no matching quote is found, respond with 404 and { error: 'No quote with id <id>' }
+const getQuote = (req, res) => {
+  const id = Number(req.params.id); // Convert string to number
 
+  const quote = quotes.find((quote) => quote.id === id);
 
+  if (!quote) {
+    return res.status(404).json({
+      error: `No quote with id ${id}`
+    });
+  }
 
-// TODO: Register endpoints here
+  res.json(quote);
+};
+
 
 // GET /api/quotes
+app.get('/api/quotes', listQuotes);
+
 // GET /api/quotes/:id
+app.get('/api/quotes/:id', getQuote);
 
 
-
-// TODO: Add a catch-all fallback that responds with 404 and { error: 'Not found: <url>' }
-// Use app.use() and place it after all other routes
-
+// Catch-all fallback for unmatched routes
+app.use((req, res) => {
+  res.status(404).json({
+    error: `Not found: ${req.originalUrl}`
+  });
+});
 
 
 app.listen(port, () => {
